@@ -18,7 +18,7 @@ class Array:
                     self.board[x][y] = 0
         return self.board
 
-# if __name__ == "__main__":
-#     a = Array(31, 20)
-#     print(a.board)
+if __name__ == "__main__":
+    a = Array(31, 20)
+    print(a.board)
 
