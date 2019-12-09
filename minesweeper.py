@@ -5,6 +5,7 @@ from backend import Array
 
 pygame.init()
 np_board = Array(31,20)
+font = pygame.font.SysFont(None, 30)
 
 W = 805
 H= 600
@@ -13,8 +14,11 @@ RED = (255, 0, 0)
 GREY = (120,120,120)
 
 screen = pygame.display.set_mode((W, H))
-flag = pygame.image.load("flag.png")
-flag = pygame.transform.scale(flag, (23,23))
+flag_img = pygame.image.load("flag.png").convert_alpha()
+flag_img = pygame.transform.scale(flag_img, (23,23))
+bomb_img = pygame.image.load("bomb.png").convert_alpha()
+
+bomb_img = pygame.transform.scale(bomb_img, (23,23))
 
 clock = pygame.time.Clock()
 game = True
@@ -29,8 +33,14 @@ def board(surface):
         for b, y in enumerate(range(90,H-10, 25)):
             if np_board.board[a][b] == 0:
                 pygame.draw.rect(surface, WHITE, [x, y, 23,23], 0)
-            else:
+            elif np_board.board[a][b] > 0:
+                text = font.render(str(np_board.board[a][b]), True, (0, 128, 0))
+                pygame.draw.rect(surface, WHITE, [x, y, 23,23], 0)
+                surface.blit(text, (x+5,y+2))
+                # pygame.draw.rect(surface, RED, [x, y, 23,23], 0)
+            elif np_board.board[a][b] == -1:
                 pygame.draw.rect(surface, RED, [x, y, 23,23], 0)
+                screen.blit(bomb_img,(x, y))
 
 def fullist():
     lst = []
@@ -74,7 +84,7 @@ def safelist():
                 for a in range(startX, endX):
                     for b in range(startY, endY):
                         lst.append([a, b])
-    print(len(lst))
+
     return lst
 
 def cover(surface):
@@ -98,7 +108,8 @@ while game:
     board(screen)
 
     #cover(screen)
-    screen.blit(flag,(101,100))
+    screen.blit(flag_img,(90,115))
+
     bomb(mouse_x, mouse_y)
     pygame.display.update()
 

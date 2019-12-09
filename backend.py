@@ -6,6 +6,7 @@ class Array:
         self.x = x
         self.y = y
         self.board = self.int_board()
+        self.board = self.touching()
 
     def int_board(self):
         """
