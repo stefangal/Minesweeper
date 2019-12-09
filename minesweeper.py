@@ -5,23 +5,25 @@ from backend import Array
 
 pygame.init()
 np_board = Array(31,20)
-font = pygame.font.SysFont(None, 30)
+
+font_board = pygame.font.SysFont(None, 30)
+font_moves = pygame.font.SysFont(None, 60)
 
 W = 805
 H= 600
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-GREY = (120,120,120)
+GREY = (200,200,200)
+
 
 screen = pygame.display.set_mode((W, H))
+
 flag_img = pygame.image.load("flag.png").convert_alpha()
 flag_img = pygame.transform.scale(flag_img, (23,23))
 bomb_img = pygame.image.load("bomb.png").convert_alpha()
+bomb_img = pygame.transform.scale(bomb_img, (21,21))
 
-bomb_img = pygame.transform.scale(bomb_img, (23,23))
-
-clock = pygame.time.Clock()
-game = True
+# F U N C T I O N S ***********************************************************************
 
 def events():
     for event in pygame.event.get():
@@ -29,88 +31,76 @@ def events():
             pygame.quit()
 
 def board(surface):
+    empty_list, touching_list, bomb_list, board_list = [],[],[],[]
     for a, x in enumerate(range(15, W-20, 25)):
         for b, y in enumerate(range(90,H-10, 25)):
             if np_board.board[a][b] == 0:
                 pygame.draw.rect(surface, WHITE, [x, y, 23,23], 0)
+                empty_list.append([x, y])
             elif np_board.board[a][b] > 0:
-                text = font.render(str(np_board.board[a][b]), True, (0, 128, 0))
+                text = font_board.render(str(np_board.board[a][b]), True, (0, 128, 0))
                 pygame.draw.rect(surface, WHITE, [x, y, 23,23], 0)
                 surface.blit(text, (x+5,y+2))
-                # pygame.draw.rect(surface, RED, [x, y, 23,23], 0)
+                touching_list.append([x, y])
             elif np_board.board[a][b] == -1:
                 pygame.draw.rect(surface, RED, [x, y, 23,23], 0)
-                screen.blit(bomb_img,(x, y))
+                screen.blit(bomb_img,(x+1, y+1))
+                bomb_list.append([x, y])
+            elif np_board.board[a][b] == -2:
+                surface.blit(flag_img, [x, y])
+            board_list.append([x,y])
+    return board_list
 
-def fullist():
-    lst = []
-    for x in range(len(np_board.board)):
-        for y in range(len(np_board.board[0])):
-            if x == 0:
-                startX = 15
-                endX = startX + 25
-            elif x > 0:
-                startX = 15+ x*25
-                endX = startX + 25
-            if y == 0:
-                startY = 90
-                endY = startY + 25
-            elif y > 0:
-                startY = 90 + y*25
-                endY = startY + 25
-            for a in range(startX, endX):
-                for b in range(startY, endY):
-                    lst.append([a, b])
-    return lst
+def cover(surface, lst):
+    for a in lst:
+        pygame.draw.rect(surface, GREY, [a[0], a[1], 23,23], 0)
+    if pygame.mouse.get_pressed()[2]:
+        pygame.event.wait()
+        x = min(a[0] for a in lst if abs(a[0]-pygame.mouse.get_pos()[0])<24)
+        y = min(a[1] for a in lst if abs(a[1]-pygame.mouse.get_pos()[1])<24)
+        if [x,y] in lst:
+            lst.pop(lst.index([x,y]))
+
+        for a, xx in enumerate(range(15, W-20, 25)):
+            for b, yy in enumerate(range(90,H-10, 25)):
+                if xx == x and yy == y:
+                    np_board.board[a][b] = -2
 
 
-def safelist():
-    lst = []
-    for x in range(len(np_board.board)):
-        for y in range(len(np_board.board[0])):
-            if np_board.board[x][y] == 1:
-                if x == 0:
-                    startX = 15
-                    endX = startX + 25
-                elif x > 0:
-                    startX = 15+ x*25
-                    endX = startX + 25
-                if y == 0:
-                    startY = 90
-                    endY = startY + 25
-                elif y > 0:
-                    startY = 90 + y*25
-                    endY = startY + 25
-                for a in range(startX, endX):
-                    for b in range(startY, endY):
-                        lst.append([a, b])
+def clicked(surf, lst, mx, my):
+
+    if pygame.mouse.get_pressed()[0]:
+        pygame.event.wait()
+        x = min(a[0] for a in lst if abs(a[0]-mx)<24)
+        y = min(a[1] for a in lst if abs(a[1]-my)<24)
+        if [x,y] in lst:
+            lst.pop(lst.index([x,y]))
 
     return lst
 
-def cover(surface):
+# G A M E *****************************************************************************
 
-    for a, x in enumerate(range(15, W-20, 25)):
-        for b, y in enumerate(range(90,H-10, 25)):
-            pygame.draw.rect(surface, GREY, [x, y, 23,23], 0)
-
-def bomb(mx, my):
-    if [mx, my] in safelist():
-        pygame.mouse.set_cursor(*pygame.cursors.diamond)
-    else:
-        pygame.mouse.set_cursor(*pygame.cursors.arrow)
-
+start_list = board(screen)
+clock = pygame.time.Clock()
+game = True
+clicked(screen, start_list, *pygame.mouse.get_pos())
+top_screen = screen.subsurface(pygame.Rect(W-135, 20, 100, 100 ))
 
 while game:
     clock.tick(50)
-    mouse_x = pygame.mouse.get_pos()[0]
-    mouse_y = pygame.mouse.get_pos()[1]
     events()
+    top_screen.fill((0,0,0))
     board(screen)
 
-    #cover(screen)
-    screen.blit(flag_img,(90,115))
+    clicked(screen, start_list, *pygame.mouse.get_pos())
+    cover(screen, clicked(screen, start_list, *pygame.mouse.get_pos()))
 
-    bomb(mouse_x, mouse_y)
+
+    move_counter = 620 % len(start_list)
+    moves_text = font_moves.render(str(move_counter), True, (255, 0, 0))
+
+    top_screen.blit(moves_text, (10, 10))
+
     pygame.display.update()
 
 pygame.quit()
