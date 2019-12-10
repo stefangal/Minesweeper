@@ -55,7 +55,4 @@ class Array:
 if __name__ == "__main__":
     a = Array(31, 20)
     print(a.board)
-    a.touching()
-    print()
-    print(a.board)
 

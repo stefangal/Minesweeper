@@ -15,8 +15,8 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREY = (200,200,200)
 
-
 screen = pygame.display.set_mode((W, H))
+pygame.display.set_caption("M   I   N   E   S   W   E   E   P   E   R")
 
 flag_img = pygame.image.load("flag.png").convert_alpha()
 flag_img = pygame.transform.scale(flag_img, (23,23))
@@ -29,6 +29,8 @@ def events():
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == QUIT:
             pygame.quit()
+
+
 
 def board(surface):
     empty_list, touching_list, bomb_list, board_list = [],[],[],[]
@@ -68,14 +70,12 @@ def cover(surface, lst):
 
 
 def clicked(surf, lst, mx, my):
-
     if pygame.mouse.get_pressed()[0]:
-        pygame.event.wait()
         x = min(a[0] for a in lst if abs(a[0]-mx)<24)
         y = min(a[1] for a in lst if abs(a[1]-my)<24)
         if [x,y] in lst:
             lst.pop(lst.index([x,y]))
-
+            pygame.event.wait()
     return lst
 
 # G A M E *****************************************************************************
@@ -87,14 +87,13 @@ clicked(screen, start_list, *pygame.mouse.get_pos())
 top_screen = screen.subsurface(pygame.Rect(W-135, 20, 100, 100 ))
 
 while game:
-    clock.tick(50)
+    clock.tick(20)
     events()
     top_screen.fill((0,0,0))
     board(screen)
 
     clicked(screen, start_list, *pygame.mouse.get_pos())
     cover(screen, clicked(screen, start_list, *pygame.mouse.get_pos()))
-
 
     move_counter = 620 % len(start_list)
     moves_text = font_moves.render(str(move_counter), True, (255, 0, 0))
