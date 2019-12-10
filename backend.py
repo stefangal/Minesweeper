@@ -52,7 +52,16 @@ class Array:
                         pass
         return self.board
 
+    @property
+    def bombs(self):
+        bomb_qty = 0
+        for row in self.board:
+            for cell in row:
+                if cell == -1:
+                    bomb_qty += 1
+        return bomb_qty
+
 if __name__ == "__main__":
     a = Array(31, 20)
-    print(a.board)
+    print(a.bombs)
 

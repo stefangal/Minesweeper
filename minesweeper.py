@@ -8,12 +8,12 @@ np_board = Array(31,20)
 
 font_board = pygame.font.SysFont(None, 30)
 font_moves = pygame.font.SysFont(None, 60)
-
-W = 805
-H= 600
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREY = (200,200,200)
+
+W = 805
+H= 600
 
 screen = pygame.display.set_mode((W, H))
 pygame.display.set_caption("M   I   N   E   S   W   E   E   P   E   R")
@@ -29,8 +29,6 @@ def events():
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == QUIT:
             pygame.quit()
-
-
 
 def board(surface):
     empty_list, touching_list, bomb_list, board_list = [],[],[],[]
