@@ -10,6 +10,7 @@ class MS:
     WHITE = (255, 255, 255)
     RED = (255, 0, 0)
     GREY = (200,200,200)
+    BLACK = (0, 0, 0)
     W = 805
     H = 600
 
@@ -19,7 +20,7 @@ class MS:
         pygame.display.set_caption("M   I   N   E   S   W   E   E   P   E   R")
         self.w = self.W-30 # 775
         self.h = self.H-100 # 500
-
+        self.offsetX = 5
         self.screen = pygame.display.set_mode((self.W, self.H))
 
         self.font_board = pygame.font.SysFont(None, 30)
@@ -42,6 +43,7 @@ class MS:
         self.txtD1_surface = self.FONT1.render(self.textD1, True, (255, 0, 0))
         self.txtD2_surface = self.FONT2.render(self.textD2, True, (205, 255, 255))
         self.author_surface = self.FONT3.render(self.author, True, (255, 255, 255))
+        self.restart_text = self.font_header_text.render("RESTART", True, (255, 255, 255))
 
         self.flag_img = pygame.image.load("img/flag.png").convert_alpha()
         self.flag_img = pygame.transform.scale(self.flag_img, (23,23))
@@ -51,8 +53,12 @@ class MS:
         self.BOMB_img = pygame.transform.scale(self.BOMB_img, (200,200)) #1:1
         self.icon_img = pygame.image.load("img/icon.jpg")
         self.icon_img = pygame.transform.scale(self.icon_img, (15, 15))
+        self.restart_img = pygame.image.load("img/restart.png").convert_alpha()
+        self.restart_img = pygame.transform.scale(self.restart_img, (35,35))
+
         pygame.display.set_icon(self.icon_img)
 
+        self.restart = False
         self.difficulty = None
         self.bomb_qty = 10
         self.flags = 0
@@ -160,49 +166,43 @@ class MS:
             pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
             self.screen.blit(self.flag_img, [xy[0], xy[1]])
 
-    # def cover(self):
-    #     """
-    #     Hides all the cells based on board_list (not clicked).
-    #     """
-    #     for a, x in enumerate(range(15, self.w, 25)):
-    #         for b, y in enumerate(range(90, self.h+75, 25)):
-    #             if self.np_board.board[a][b] in [-1,0,1,2,3,4,5,6,7,8,9]:
-    #                 pygame.draw.rect(self.screen, self.GREY, [x, y, 23,23], 0)
-
-
-    def clicked(self):
+    def clicked(self, surface):
         """
         If clicked, cell removed from board_list. So it will be not covered.
         """
+        restart_pos = self.restart_img.get_rect(topleft=(surface.get_rect().centerx-5, 35))
+
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == QUIT:
                 pygame.quit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
-                y = min(a[1] for a in self.board_list if abs(a[1]-pygame.mouse.get_pos()[1])<24)
-                if [x, y] in self.board_list:
-                    self.board_list.pop(self.board_list.index([x, y]))
+                if  15 < pygame.mouse.get_pos()[0] < self.w+10 and 90 < pygame.mouse.get_pos()[1] < self.h+88:
+                    x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
+                    y = min(a[1] for a in self.board_list if abs(a[1]-pygame.mouse.get_pos()[1])<24)
+                    if [x, y] in self.board_list:
+                        self.board_list.pop(self.board_list.index([x, y]))
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
-                y = min(a[1] for a in self.board_list if abs(a[1]-pygame.mouse.get_pos()[1])<24)
-                # Adding flags by updating flag_list
-                if [x,y] in self.board_list:
-                    self.board_list.pop(self.board_list.index([x,y]))
-                    self.flag_list.append([x, y])
-                    self.flags += 1
-                # Removing flags from flag_list
-                elif [x,y] not in self.board_list and [x, y] in self.flag_list:
-                    self.board_list.append([x,y])
-                    self.flag_list.pop(self.flag_list.index([x, y]))
-                    self.flags -= 1
-
-    # def timer(self, run=True):
-    #     if run:
-    #         start = timer()
-    #         end = timer()
-    #         tm =timedelta(seconds=end-start)
-    #     return tm
+                if  15 < pygame.mouse.get_pos()[0] < self.w+10 and 90 < pygame.mouse.get_pos()[1] < self.h+88:
+                    x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
+                    y = min(a[1] for a in self.board_list if abs(a[1]-pygame.mouse.get_pos()[1])<24)
+                    # Adding flags by updating flag_list
+                    if [x,y] in self.board_list:
+                        self.board_list.pop(self.board_list.index([x,y]))
+                        self.flag_list.append([x, y])
+                        self.flags += 1
+                    # Removing flags from flag_list
+                    elif [x,y] not in self.board_list and [x, y] in self.flag_list:
+                        self.board_list.append([x,y])
+                        self.flag_list.pop(self.flag_list.index([x, y]))
+                        self.flags -= 1
+            if restart_pos.collidepoint(pygame.mouse.get_pos()):
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self.offsetX = 10
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.offsetX = 5
+                    self.restart = True
+        return self.restart
 
     def header(self, surface):
 
@@ -219,6 +219,8 @@ class MS:
         surface.blit(flags_text, (80, 5))
         surface.blit(flags_value, (80, 25))
 
+        surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
+        surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
 
     def intro(self):
         clock1 = pygame.time.Clock()
@@ -227,39 +229,31 @@ class MS:
             clock1.tick(60)
             if self.difficulty in [0,1,2]:
                 running = False
-                return self.difficulty
             else:
                 self.events()
 
             self.intro_page()
-
             pygame.display.update()
-
-        pygame.quit()
+        return self.difficulty
 
 
     def game(self, difficulty):
         clock2 = pygame.time.Clock()
         running = True
-
         if difficulty == 0:
-            self.bomb_qty = 10
-            self.w = 200
-            self.h = 200
+            self.bomb_qty, self.w, self.h = 10, 200, 200
 
         elif difficulty == 1:
-            self.bomb_qty = 40
-            self.w = 400
-            self.h = 400
+            self.bomb_qty, self.w, self.h = 40, 400, 400
 
         elif difficulty == 2:
-            self.bomb_qty = 99
-            self.w = 600
-            self.h = 600
+            self.bomb_qty, self.w, self.h = 99, 600, 600
+
         self.get_boardlist(self.w, self.h)
+
         self.screen = pygame.display.set_mode((self.w+30, self.h+100))
-        self.screen.fill((0,0,0))
-        top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 80 ))
+        self.screen.fill(self.BLACK)
+        top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 88 ))
         self.np_board = Array(self.w//25, self.h//25, self.bomb_qty)
 
         start_time = time.time()
@@ -271,9 +265,12 @@ class MS:
 
             self.board()
             self.cover()
-            self.clicked()
+            if self.clicked(top_screen):
+                break
+            else:
+                self.clicked(top_screen)
 
-            self.header(top_screen )
+            self.header(top_screen)
             seconds = (time.time() - start_time)
             if (time.time() - start_time) > 59 == 0:
                 minutes += 1
@@ -283,14 +280,13 @@ class MS:
             top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
 
             pygame.display.update()
-        pygame.quit()
 
 
 if __name__ == "__main__":
-    minesweeper = MS()
-    minesweeper.intro()
-
-    minesweeper.game(minesweeper.difficulty)
-
+    while True:
+        minesweeper = MS()
+        minesweeper.intro()
+        minesweeper.game(minesweeper.difficulty)
+    pygame.quit()
 
 
