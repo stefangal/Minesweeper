@@ -4,7 +4,8 @@ from backend import Array
 
 
 pygame.init()
-np_board = Array(31,20)
+np_board = Array(31,20,2)
+print(np_board.board)
 
 font_board = pygame.font.SysFont(None, 30)
 font_moves = pygame.font.SysFont(None, 60)
@@ -91,7 +92,7 @@ while game:
     board(screen)
 
     clicked(screen, start_list, *pygame.mouse.get_pos())
-    cover(screen, clicked(screen, start_list, *pygame.mouse.get_pos()))
+    #cover(screen, clicked(screen, start_list, *pygame.mouse.get_pos()))
 
     move_counter = 620 % len(start_list)
     moves_text = font_moves.render(str(move_counter), True, (255, 0, 0))

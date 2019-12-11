@@ -2,21 +2,25 @@ import numpy as np
 
 
 class Array:
-    def __init__(self, x, y):
+    def __init__(self, x, y, bombs):
         self.x = x
         self.y = y
-        self.board = self.int_board()
-        self.board = self.touching()
+        self.board = self.int_board(bombs)
 
-    def int_board(self):
+
+    def int_board(self, bmb_qty):
         """
         Generating bombs, where 1 means bomb, 0 means safe
         """
-        self.board = np.random.randint(low=-1, high=20, size=(self.x, self.y))
-        for x, row in enumerate(self.board):
-            for y, col in enumerate(row):
-                if col not in [0, -1]:
-                    self.board[x][y] = 0
+        self.tmp = np.array(list(-1 for _ in range(bmb_qty)))
+        self.new = np.array([0])
+        size = self.x*self.y
+        while len(self.tmp) < size:
+            self.tmp = np.append(self.tmp, self.new, axis=0)
+        self.board = np.ravel(self.tmp)
+        np.random.shuffle(self.board)
+        self.board = self.board.reshape((self.x, self.y))
+        self.touching()
         return self.board
 
     def touching(self):
@@ -61,7 +65,7 @@ class Array:
                     bomb_qty += 1
         return bomb_qty
 
-if __name__ == "__main__":
-    a = Array(31, 20)
-    print(a.bombs)
+# if __name__ == "__main__":
+#     a = Array(31, 20, 20)
+#     print(a.board)
 
