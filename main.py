@@ -1,5 +1,8 @@
 # TODO
-    #Sort out np_board class method !!!
+    #clean the code
+    #add action when win - when all bombs are flagged and rest is removed
+    #(boardlist contains only flaglist and flaglist == bomblist)
+
 import pygame
 from pygame.locals import *
 from source import Array
@@ -59,6 +62,7 @@ class MS:
         pygame.display.set_icon(self.icon_img)
 
         self.restart = False
+        self.show = True
         self.difficulty = None
         self.bomb_qty = 10
         self.flags = 0
@@ -156,15 +160,16 @@ class MS:
                     self.screen.blit(self.bomb_img,(x, y))
                     self.bomb_list.append([x, y])
 
-    def cover(self):
+    def cover(self, visible):
         """
         Hides all the cells based on board_list (not clicked).
         """
-        for xy in self.board_list:
-            pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
-        for xy in self.flag_list:
-            pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
-            self.screen.blit(self.flag_img, [xy[0], xy[1]])
+        if visible:
+            for xy in self.board_list:
+                pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
+            for xy in self.flag_list:
+                pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
+                self.screen.blit(self.flag_img, [xy[0], xy[1]])
 
     def clicked(self, surface):
         """
@@ -205,23 +210,25 @@ class MS:
         return self.restart
 
     def header(self, surface):
+        if self.show:
+            move_counter = (self.w//25 * self.h//25) % len(self.board_list)
+            moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
+            bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
+            bombs_value = self.font_header_value.render(str(self.bomb_qty), True, (255, 0, 0))
+            flags_text = self.font_header_text.render("Flags", True, (255, 0, 0))
+            flags_value = self.font_header_value.render(str(self.flags), True, (255, 0, 0))
 
-        move_counter = (self.w//25 * self.h//25) % len(self.board_list)
-        moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
-        bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
-        bombs_value = self.font_header_value.render(str(self.bomb_qty), True, (255, 0, 0))
-        flags_text = self.font_header_text.render("Flags", True, (255, 0, 0))
-        flags_value = self.font_header_value.render(str(self.flags), True, (255, 0, 0))
+            surface.blit(moves_text, (self.w-(moves_text.get_rect().right), 5))
+            surface.blit(bombs_text, (20, 5))
+            surface.blit(bombs_value, (20, 25))
+            surface.blit(flags_text, (80, 5))
+            surface.blit(flags_value, (80, 25))
 
-        surface.blit(moves_text, (self.w-(moves_text.get_rect().right), 5))
-        surface.blit(bombs_text, (20, 5))
-        surface.blit(bombs_value, (20, 25))
-        surface.blit(flags_text, (80, 5))
-        surface.blit(flags_value, (80, 25))
-
-        surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
-        surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
-
+            surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
+            surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
+        else:
+            surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
+            surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
     def intro(self):
         clock1 = pygame.time.Clock()
         running = True
@@ -235,6 +242,12 @@ class MS:
             self.intro_page()
             pygame.display.update()
         return self.difficulty
+
+    def win_check(self):
+        for koord in self.bomb_list:
+            if koord not in self.board_list and koord not in self.flag_list:
+                return True
+
 
 
     def game(self, difficulty):
@@ -259,27 +272,39 @@ class MS:
         start_time = time.time()
 
         minutes = 0
+
         while running:
             clock2.tick(60)
-            top_screen.fill((20, 20, 20))
-
-            self.board()
-            self.cover()
-            if self.clicked(top_screen):
-                break
+            if self.win_check():
+                self.show = False
+                if self.clicked(top_screen):
+                    break
+                else:
+                    self.board()
+                    self.cover(self.show)
+                    pygame.display.update()
             else:
-                self.clicked(top_screen)
+                top_screen.fill((20, 20, 20))
 
-            self.header(top_screen)
-            seconds = (time.time() - start_time)
-            if (time.time() - start_time) > 59 == 0:
-                minutes += 1
-                start_time = time.time()
+                self.board()
+                self.cover(self.show)
+                if self.clicked(top_screen):
+                    break
+                else:
+                    self.clicked(top_screen)
 
-            timing = self.font_header_text.render(str(minutes).zfill(2)+":"+str(int(seconds)).zfill(2), True, (0,255,0))
-            top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+                self.header(top_screen)
+                seconds = (time.time() - start_time)
+                if (time.time() - start_time) > 59 == 0:
+                    minutes += 1
+                    start_time = time.time()
 
-            pygame.display.update()
+                timing = self.font_header_text.render(str(minutes).zfill(2)+":"+str(int(seconds)).zfill(2), True, (0,255,0))
+                top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+
+
+
+                pygame.display.update()
 
 
 if __name__ == "__main__":
