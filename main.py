@@ -2,7 +2,7 @@
     #Sort out np_board class method !!!
 import pygame
 from pygame.locals import *
-from backend import Array
+from source import Array
 
 class MS:
     WHITE = (255, 255, 255)
@@ -42,19 +42,18 @@ class MS:
         self.txtD2_surface = self.FONT2.render(self.textD2, True, (205, 255, 255))
         self.author_surface = self.FONT3.render(self.author, True, (255, 255, 255))
 
-        self.flag_img = pygame.image.load("flag.png").convert_alpha()
+        self.flag_img = pygame.image.load("img/flag.png").convert_alpha()
         self.flag_img = pygame.transform.scale(self.flag_img, (23,23))
-        self.bomb_img = pygame.image.load("bomb.png").convert_alpha()
+        self.bomb_img = pygame.image.load("img/bomb.png").convert_alpha()
         self.bomb_img = pygame.transform.scale(self.bomb_img, (21,21))
-        self.BOMB_img = pygame.image.load("bomb.png").convert_alpha()
+        self.BOMB_img = pygame.image.load("img/bomb.png").convert_alpha()
         self.BOMB_img = pygame.transform.scale(self.BOMB_img, (80,100)) #1: 1.2
-        self.icon_img = pygame.image.load("icon.png")
+        self.icon_img = pygame.image.load("img/icon.png")
         self.icon_img = pygame.transform.scale(self.icon_img, (15, 15))
         pygame.display.set_icon(self.icon_img)
 
         self.difficulty = None
         self.bomb_qty = 10
-        #self.np_board = Array(self.W//25, self.H//20, self.bomb_qty)
         self.flags = 0
         self.flag_list = []
         self.empty_list = []
@@ -64,10 +63,6 @@ class MS:
 
         self.get_boardlist()
 
-    # def newBoard(self, bomb_qty):
-    #     self.np_board = Array(self.W//25, self.H//20, bomb_qty)
-    #     print(self.np_board)
-    #     return self.np_board
 
     def introPage(self):
         self.screen.fill((55,55,0))
@@ -229,7 +224,6 @@ class MS:
         elif difficulty == 2:
             self.bomb_qty = 30
 
-        #self.np_board = Array(self.W//25, self.H//20, self.bomb_qty)
         self.np_board = Array(31, 20, self.bomb_qty)
 
         print(self.np_board)
@@ -245,7 +239,6 @@ class MS:
 
             pygame.display.update()
         pygame.quit()
-
 
 
 if __name__ == "__main__":
