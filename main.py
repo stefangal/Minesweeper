@@ -1,9 +1,3 @@
-# TODO
-    #clean the code
-    #add action when win - when all bombs are flagged and rest is removed
-    #(boardlist contains only flaglist and flaglist == bomblist)
-    # add cell unocvered list. if game over, last item in uncovered list should be red. or add animation of blow up.
-
 import pygame
 from pygame.locals import *
 from source import Array
@@ -258,7 +252,7 @@ class MS:
         return False
 
     def header(self, surface):
-        if self.board_list != []: #self.show and
+        if self.board_list != []:
             move_counter = (self.w//25 * self.h//25) % len(self.board_list)
             moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
             bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
@@ -276,18 +270,15 @@ class MS:
             surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
 
     def lost(self):
-        for koord in self.bomb_list:
-            if koord not in self.board_list and koord not in self.flag_list:
+        for coord in self.bomb_list:
+            if coord not in self.board_list and coord not in self.flag_list:
                 return True
         return False
 
     def win_check(self):
         if sorted(self.bomb_list) == sorted(self.flag_list) and self.flag_list != [] and self.board_list == []:
-            print("WINNER")
             return True
         return False
-
-
 
     def game(self):
         clock = pygame.time.Clock()
@@ -314,51 +305,53 @@ class MS:
 
         while running:
             clock.tick(60)
+
             #TIMER --------------------------------
             seconds = (time.time() - start_time)
             if (time.time() - start_time) > 59 == 0:
                 minutes += 1
                 start_time = time.time()
-            #--------------------------------------
+
+            # WHEN LOST --------------------------------------
             if self.lost():
                 self.show = False # UNCOVER everything
-                if self.clicked():
-                    break
-                else:
-                    while not self.clicked():
-                        once += 1
-                        self.draw_board()
+                while not self.clicked():
+                    once += 1
+                    self.draw_board()
 
-                        if once == 1:
-                            for w, bang in enumerate(self.bangs_imgs):
-                                x1, y1 = self.uncovered_list[-1]
-                                pygame.time.wait(200*(1+w//100))
-                                self.screen.blit(bang, (x1-3, y1-3))
-                                pygame.display.update()
+                    if once == 1:
+                        for w, bang in enumerate(self.bangs_imgs):
+                            x1, y1 = self.uncovered_list[-1]
+                            pygame.time.wait(200*(1+w//100))
+                            self.screen.blit(bang, (x1-3, y1-3))
+                            pygame.display.update()
 
-                        self.screen.blit(self.bang_img2, (x1-5, y1-5))
-                        self.screen.blit(self.LOL_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
-                        top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+                    self.screen.blit(self.bang_img2, (x1-5, y1-5))
+                    self.screen.blit(self.LOL_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
+                    top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
 
-                        self.cell_hider(self.show)
+                    self.cell_hider(self.show)
 
-                        if self.clicked():
-                            running = False
-                            break
-                        pygame.display.update()
+                    if self.clicked():
+                        running = False
+                        break
+                    pygame.display.update()
+
+            # WHEN WON --------------------------------------
             if self.win_check():
                 self.show = False
-                if self.clicked():
-                    break
-                else:
+                while not self.clicked():
                     self.draw_board()
                     self.cell_hider(self.show)
                     self.screen.blit(self.WON_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
-
                     pygame.display.update()
-            if self.clicked():
-                break
 
+            # IF WANT TO RESTART -------------------------------
+            if self.clicked():
+                running = False
+
+
+            # NORMAL GAME LOOP -------------------------------
             top_screen.fill((20, 20, 20))
             self.draw_board()
 
