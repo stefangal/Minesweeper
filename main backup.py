@@ -95,9 +95,10 @@ class MS:
         self.touching_list = []
         self.bomb_list = []
         self.board_list = []
-        self.uncovered_list = []
+        self.uncovered = []
 
-# --------------------------------------------- INTRO PAGE ---------------------------------------------
+        #self.get_boardlist(self.w, self.h)
+
 
     def intro_page(self):
         self.screen.fill((51,204,204))
@@ -126,7 +127,7 @@ class MS:
         self.screen.blit(b3, (self.W/4*3-self.bomb_img.get_rect().centerx-15, 462))
         self.screen.blit(self.bomb_img, (self.W/4*3-self.bomb_img.get_rect().centerx+15, 460))
 
-    def intro_events(self):
+    def events(self):
         txtE1pos = self.txtE1_surface.get_rect(topleft=(self.W/4-self.txtE1_surface.get_rect().centerx, 400))
         txtM1pos = self.txtM1_surface.get_rect(topleft=(self.W/2-self.txtM1_surface.get_rect().centerx, 400))
         txtD1pos = self.txtD1_surface.get_rect(topleft=(self.W/4*3-self.txtD1_surface.get_rect().centerx, 400))
@@ -155,110 +156,131 @@ class MS:
                 self.txtM1_surface = self.FONT1.render(self.textM1, True, (255, 0, 0))
                 self.txtD1_surface = self.FONT1.render(self.textD1, True, (255, 0, 0))
 
-    def intro(self):
-        clock = pygame.time.Clock()
-        running = True
-        while running:
-            clock.tick(60)
-            if self.difficulty in [0, 1, 2]:
-                running = False
-            self.intro_events()
-            self.intro_page()
-            pygame.display.update()
-        return self.difficulty
-# --------------------------------------------- INTRO PAGE (END) ---------------------------------------------
-    def make_boardlist(self, width, hight):
+    def get_boardlist(self, width, hight):
         """
         Makes a list of coordinates for each cell.
         """
-        self.cellrect_list, self.board_list = [], []
 
+        self.cellrect_list, self.board_list = [], []
+        # for a, x in enumerate(range(15, width, 25)): #w+15
+        #     for b, y in enumerate(range(90, hight+75, 25)):
         for b, y in enumerate(range(90, hight+75, 25)):
             for a, x in enumerate(range(15, width, 25)): #w+15
                 cell = pygame.draw.rect(self.screen, self.WHITE, [x, y, 23,23], 0)
-                self.cellrect_list.append(cell)
+                self.cellrect_list.append([cell])
                 if [x, y] not in self.board_list:
                     self.board_list.append([x, y])
+        print(self.cellrect_list)
+
         return self.board_list
 
-    def draw_board(self):
+    def board(self):
         """
-        Draw the board based on np_board.board numpy array.
+        Draws pics based on Array.
         """
         self.bomb_list, self.empty_list, self.touching_list = [], [], []
-
         for a, y in enumerate(range(90, self.h+75, 25)):
             for b, x in enumerate(range(15, self.w, 25)):
-
                 pygame.draw.rect(self.screen, self.WHITE, [x, y, 23,23], 0)
-
                 if self.np_board.board[a][b] == 0:
                     self.empty_list.append([x, y])
-
                 elif self.np_board.board[a][b] > 0:
                     text = self.font_board.render(str(self.np_board.board[a][b]), True, (0, 128, 0))
                     self.screen.blit(text, (x+5,y+2))
                     self.touching_list.append([x, y])
-
                 elif self.np_board.board[a][b] == -1:
                     self.screen.blit(self.bomb_img,(x, y))
                     self.bomb_list.append([x, y])
 
-    def cell_hider(self, visible):
+
+
+    def cover(self, visible):
         """
         Hides all the cells based on board_list (not clicked).
         """
         if visible:
-            for x, y in self.board_list:
-                pygame.draw.rect(self.screen, self.GREY, [x, y, 23,23], 0)
-            for x, y in self.flag_list:
-                pygame.draw.rect(self.screen, self.GREY, [x, y, 23,23], 0)
-                self.screen.blit(self.flag_img, [x, y])
+            for xy in self.board_list:
+                pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
+            for xy in self.flag_list:
+                pygame.draw.rect(self.screen, self.GREY, [xy[0], xy[1], 23,23], 0)
+                self.screen.blit(self.flag_img, [xy[0], xy[1]])
 
     def clicked(self):
         """
         If clicked within playing cells, cell removed from board_list.
         """
-        restart_pos = self.restart_img.get_rect(topleft=(self.w//2+15, 30))
 
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == pygame.QUIT:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == QUIT:
                 pygame.quit()
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if restart_pos.collidepoint(pygame.mouse.get_pos()):
-                    return True
-                else:
-                    for cell in self.cellrect_list:
+                if len(self.board_list) > 1:
+                    #print(self.board_list)
+                    if 15 < pygame.mouse.get_pos()[0] < self.w + 15 and 90 < pygame.mouse.get_pos()[1] < self.h + 88:
+                        x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
+                        y = min(b[1] for b in self.board_list if abs(b[1]-pygame.mouse.get_pos()[1])<24)
+                        if [x, y] in self.board_list:
+                            print(x, y)
+                            removed = self.board_list.pop(self.board_list.index([x, y]))
+                            self.uncovered.append(removed)
 
-                        if cell.collidepoint(pygame.mouse.get_pos()):
-                            x = cell.x
-                            y = cell.y
+                elif len(self.board_list) == 1:
+                    if 15 < pygame.mouse.get_pos()[0] < self.w + 10 and 90 < pygame.mouse.get_pos()[1] < self.h + 88:
+                        x = self.board_list[0][0]
+                        y = self.board_list[0][1]
+                        if abs(x- pygame.mouse.get_pos()[0] < 24) and abs(y -pygame.mouse.get_pos()[1] < 24):
                             if [x, y] in self.board_list:
-                                removed = self.board_list.pop(self.board_list.index([x, y])) # remove from Board_list
-                                self.uncovered_list.append(removed) # add to Uncovered list
+                                removed = self.board_list.pop(self.board_list.index([x, y]))
+                                self.uncovered.append(removed)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                 for cell in self.cellrect_list:
-                    if cell.collidepoint(pygame.mouse.get_pos()):
-                        x = cell.x
-                        y = cell.y
-                        # ADD FLAG by updating flag_list
+                if len(self.board_list) > 1:
+                    if  15 < pygame.mouse.get_pos()[0] < self.w + 15 and 90 < pygame.mouse.get_pos()[1] < self.h + 88:
+                        x = min(a[0] for a in self.board_list if abs(a[0]-pygame.mouse.get_pos()[0])<24)
+                        y = min(a[1] for a in self.board_list if abs(a[1]-pygame.mouse.get_pos()[1])<24)
+                        # Adding flags by updating flag_list
                         if [x,y] in self.board_list:
-                            print(x, y)
-                            removed = self.board_list.pop(self.board_list.index([x,y]))  # remove from Board_list
-                            self.uncovered_list.append(removed)
+                            removed = self.board_list.pop(self.board_list.index([x,y]))
+                            self.uncovered.append(removed)
                             self.flag_list.append([x, y])
                             self.flags += 1
-                        # REMOVE FLAG from flag_list
+                        # Removing flags from flag_list
                         elif [x,y] not in self.board_list and [x, y] in self.flag_list:
-                            self.board_list.append([x,y])  # add to Board_list
-                            self.flag_list.pop(self.flag_list.index([x, y])) # remove from Flag list
+                            self.board_list.append([x,y])
+                            self.flag_list.pop(self.flag_list.index([x, y]))
                             self.flags -= 1
-        return False
+                elif len(self.board_list) == 1:
+                    if  15 < pygame.mouse.get_pos()[0] < self.w + 10 and 90 < pygame.mouse.get_pos()[1] < self.h + 88:
+                        x = self.board_list[0][0]
+                        y = self.board_list[0][1]
+                        if abs(x- pygame.mouse.get_pos()[0] < 24) and abs(y -pygame.mouse.get_pos()[1] < 24):
+                          # Adding flags by updating flag_list
+                            if [x,y] in self.board_list:
+                                removed = self.board_list.pop(self.board_list.index([x,y]))
+                                self.uncovered.append(removed)
+                                self.flag_list.append([x, y])
+                                self.flags += 1
+                            # Removing flags from flag_list
+                            elif [x,y] not in self.board_list and [x, y] in self.flag_list:
+                                self.board_list.append([x,y])
+                                self.flag_list.pop(self.flag_list.index([x, y]))
+                                self.flags -= 1
+
+    def restart_game(self, surface):
+        restart_pos = self.restart_img.get_rect(topleft=(surface.get_rect().centerx-5, 35))
+
+        for event in pygame.event.get():
+            if restart_pos.collidepoint(pygame.mouse.get_pos()):
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    self.offsetX = 10
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.offsetX = 5
+                    self.restart = True
+        return self.restart
 
     def header(self, surface):
-        if self.board_list != []: #self.show and
+        if self.show and self.board_list != []:
             move_counter = (self.w//25 * self.h//25) % len(self.board_list)
             moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
             bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
@@ -274,109 +296,120 @@ class MS:
 
             surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
             surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
+        else:
+            surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
+            surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
 
-    def lost(self):
+    def intro(self):
+        clock1 = pygame.time.Clock()
+        running = True
+        while running:
+            clock1.tick(60)
+            if self.difficulty in [0,1,2]:
+                running = False
+            else:
+                self.events()
+
+            self.intro_page()
+            pygame.display.update()
+        return self.difficulty
+
+    def lost_check(self):
         for koord in self.bomb_list:
             if koord not in self.board_list and koord not in self.flag_list:
                 return True
-        return False
+            return False
 
     def win_check(self):
         if sorted(self.bomb_list) == sorted(self.flag_list) and self.flag_list != [] and self.board_list == []:
             print("WINNER")
             return True
-        return False
 
-
-
-    def game(self):
-        clock = pygame.time.Clock()
-
-        if self.difficulty == 0:
+    def game(self, difficulty):
+        clock2 = pygame.time.Clock()
+        running = True
+        if difficulty == 0:
             self.bomb_qty, self.w, self.h = 10, 200, 200
-        elif self.difficulty == 1:
+
+        elif difficulty == 1:
             self.bomb_qty, self.w, self.h = 40, 400, 400
-        elif self.difficulty == 2:
+
+        elif difficulty == 2:
             self.bomb_qty, self.w, self.h = 99, 600, 600
 
-        self.make_boardlist(self.w, self.h)
+        self.get_boardlist(self.w, self.h)
 
         self.screen = pygame.display.set_mode((self.w+30, self.h+100))
-        top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 90))
-
+        self.screen.fill(self.BLACK)
+        top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 88 ))
         self.np_board = Array(self.w//25, self.h//25, self.bomb_qty)
 
         start_time = time.time()
+
         minutes = 0
         once = 0
-
-        running = True
-
+        print(self.np_board.board)
         while running:
-            clock.tick(60)
+            clock2.tick(60)
             #TIMER --------------------------------
             seconds = (time.time() - start_time)
             if (time.time() - start_time) > 59 == 0:
                 minutes += 1
                 start_time = time.time()
             #--------------------------------------
-            if self.lost():
-                self.show = False # UNCOVER everything
-                if self.clicked():
-                    break
-                else:
-                    while not self.clicked():
-                        once += 1
-                        self.draw_board()
-
-                        if once == 1:
-                            for w, bang in enumerate(self.bangs_imgs):
-                                x1, y1 = self.uncovered_list[-1]
-                                pygame.time.wait(200*(1+w//100))
-                                self.screen.blit(bang, (x1-3, y1-3))
-                                pygame.display.update()
-
-                        self.screen.blit(self.bang_img2, (x1-5, y1-5))
-                        self.screen.blit(self.LOL_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
-                        top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
-
-                        self.cell_hider(self.show)
-
-                        if self.clicked():
-                            running = False
-                            break
-                        pygame.display.update()
-            if self.win_check():
+            if self.lost_check():
                 self.show = False
-                if self.clicked():
+                if self.restart_game(top_screen):
                     break
                 else:
-                    self.draw_board()
-                    self.cell_hider(self.show)
+                    once += 1
+                    self.board()
+                    self.cover(self.show)
+                    if once == 1:
+                        for w, bang in enumerate(self.bangs_imgs):
+                            x1, y1 = self.uncovered[-1]
+                            pygame.time.wait(200*(1+w//100))
+                            self.screen.blit(bang, (x1-3, y1-3))
+                            pygame.display.flip()
+                        pygame.draw.rect(self.screen, self.WHITE, [x1, y1, 23,23], 0)
+                    self.screen.blit(self.bang_img2, (x1-5, y1-5))
+                    self.screen.blit(self.LOL_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
+                    top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+                    self.clicked()
+                    pygame.display.update()
+            elif self.win_check():
+                self.show = False
+                if self.restart_game(top_screen):
+                    break
+                else:
+                    self.board()
+                    self.cover(self.show)
                     self.screen.blit(self.WON_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
 
                     pygame.display.update()
-            if self.clicked():
-                break
+            else:
+                top_screen.fill((20, 20, 20))
+                self.board()
+                self.clicked()
+                #self.cover(self.show)
+                self.cover(False)
 
-            top_screen.fill((20, 20, 20))
-            self.draw_board()
+                if self.restart_game(top_screen):
+                    break
 
-            timing = self.font_header_text.render(str(minutes).zfill(2)+":"+str(int(seconds)).zfill(2), True, (0,255,0))
-            top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+                self.header(top_screen)
 
-            self.header(top_screen)
-            self.cell_hider(self.show) # unhide cell with are not in board_list
-            self.clicked() # remove clicked cell from board_list
 
-            pygame.display.update()
+                timing = self.font_header_text.render(str(minutes).zfill(2)+":"+str(int(seconds)).zfill(2), True, (0,255,0))
+                top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
+                pygame.display.update()
 
 
 if __name__ == "__main__":
     while True:
         minesweeper = MS()
         minesweeper.intro()
-        minesweeper.game()
+        minesweeper.game(minesweeper.difficulty)
     pygame.quit()
 
 
