@@ -126,7 +126,7 @@ class MS:
         txtD1pos = self.txtD1_surface.get_rect(topleft=(self.W/4*3-self.txtD1_surface.get_rect().centerx, 400))
 
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == QUIT:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or event.type == pygame.QUIT:
                 pygame.quit()
 
             if txtE1pos.collidepoint(pygame.mouse.get_pos()):
