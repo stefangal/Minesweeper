@@ -363,7 +363,6 @@ class MS:
             top_screen.blit(timing, (self.w-(timing.get_rect().right), 40))
 
             self.header(top_screen)
-            self.show = False
             self.cell_hider(self.show) # unhide cell with are not in board_list
             self.clicked() # remove clicked cell from board_list
 
