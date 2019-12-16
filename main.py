@@ -239,7 +239,6 @@ class MS:
                         y = cell.y
                         # ADD FLAG by updating flag_list
                         if [x,y] in self.board_list:
-                            print(x, y)
                             removed = self.board_list.pop(self.board_list.index([x,y]))  # remove from Board_list
                             self.uncovered_list.append(removed)
                             self.flag_list.append([x, y])
@@ -255,22 +254,21 @@ class MS:
         return False
 
     def header(self, surface):
-        if self.board_list != []:
-            move_counter = (self.w//25 * self.h//25) % len(self.board_list)
-            moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
-            bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
-            bombs_value = self.font_header_value.render(str(self.bomb_qty), True, (255, 0, 0))
-            flags_text = self.font_header_text.render("Flags", True, (255, 0, 0))
-            flags_value = self.font_header_value.render(str(self.flags), True, (255, 0, 0))
+        move_counter = len(self.uncovered_list)
+        moves_text = self.font_header_value.render(str(move_counter)+"/"+str(self.np_board.board.size), True, (255, 0, 0))
+        bombs_text = self.font_header_text.render("Bombs", True, (255, 0, 0))
+        bombs_value = self.font_header_value.render(str(self.bomb_qty), True, (255, 0, 0))
+        flags_text = self.font_header_text.render("Flags", True, (255, 0, 0))
+        flags_value = self.font_header_value.render(str(self.flags), True, (255, 0, 0))
 
-            surface.blit(moves_text, (self.w-(moves_text.get_rect().right), 5))
-            surface.blit(bombs_text, (20, 5))
-            surface.blit(bombs_value, (20, 25))
-            surface.blit(flags_text, (80, 5))
-            surface.blit(flags_value, (80, 25))
+        surface.blit(moves_text, (self.w-(moves_text.get_rect().right), 5))
+        surface.blit(bombs_text, (20, 5))
+        surface.blit(bombs_value, (20, 25))
+        surface.blit(flags_text, (80, 5))
+        surface.blit(flags_value, (80, 25))
 
-            surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
-            surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
+        surface.blit(self.restart_img, (surface.get_rect().centerx, self.offsetX+27))
+        surface.blit(self.restart_text, (surface.get_rect().centerx-self.restart_text.get_rect().centerx+15, 65))
 
     def lost(self):
         for coord in self.bomb_list:
@@ -299,9 +297,10 @@ class MS:
         top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 90))
 
         self.np_board = Array(self.w//25, self.h//25, self.bomb_qty)
-
+        print(self.np_board.board)
         start_time = time.time()
-        minutes = 0
+        seconds, minutes = 0, 0
+
         once = 0
 
         running = True
@@ -309,11 +308,6 @@ class MS:
         while running:
             clock.tick(60)
 
-            #TIMER --------------------------------
-            seconds = (time.time() - start_time)
-            if (time.time() - start_time) > 59 == 0:
-                minutes += 1
-                start_time = time.time()
 
             # WHEN LOST --------------------------------------
             if self.lost():
@@ -345,14 +339,25 @@ class MS:
                 self.show = False
                 while not self.clicked():
                     self.draw_board()
-                    self.cell_hider(self.show)
                     self.screen.blit(self.WON_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
+
+                    if self.clicked():
+                        running = False
+                        break
                     pygame.display.update()
 
             # IF WANT TO RESTART -------------------------------
             if self.clicked():
                 running = False
                 self.restart = True
+
+            #TIMER --------------------------------
+            if seconds > 60:
+                minutes += 1
+                seconds = 0
+                start_time = time.time()
+            else:
+                seconds = (time.time() - start_time)
 
             # NORMAL GAME LOOP -------------------------------
             top_screen.fill((20, 20, 20))
