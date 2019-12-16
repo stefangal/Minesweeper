@@ -23,6 +23,9 @@ class Array:
         self.touching()
         return self.board
 
+    # def test_board(self):
+    #     self.bd =
+
     def touching(self):
         for row_idx, row in enumerate(self.board, start=0):
             for nr_idx, nr in enumerate(row, start=0):
@@ -31,29 +34,51 @@ class Array:
                         #1 before
                         if nr_idx > 0 and self.board[row_idx][nr_idx-1] != -1:
                             self.board[row_idx][nr_idx-1] += 1
+                    except:
+                        pass
+                    try:
                         #1 after
-                        if nr_idx < 19 and self.board[row_idx][nr_idx+1] != -1:
+                        if nr_idx < self.y and self.board[row_idx][nr_idx+1] != -1:
                             self.board[row_idx][nr_idx+1] += 1
+                    except:
+                        pass
+                    try:
                         #above 1 before
                         if row_idx > 0 and nr_idx > 0 and self.board[row_idx-1][nr_idx-1] != -1:
                             self.board[row_idx-1][nr_idx-1] += 1
+                    except:
+                        pass
+                    try:
                         #above
                         if row_idx > 0 and self.board[row_idx-1][nr_idx] != -1:
                             self.board[row_idx-1][nr_idx] += 1
+                    except:
+                        pass
+                    try:
                         #above 1 after
-                        if  row_idx > 0 and nr_idx < 19 and self.board[row_idx-1][nr_idx+1] != -1:
+                        if  row_idx > 0 and nr_idx < self.y and self.board[row_idx-1][nr_idx+1] != -1:
                             self.board[row_idx-1][nr_idx+1] += 1
+                    except:
+                        pass
+                    try:
                         #below 1 before
-                        if row_idx < 31 and nr_idx > 0 and self.board[row_idx+1][nr_idx-1] != -1:
+                        if row_idx <= self.x and nr_idx > 0 and self.board[row_idx+1][nr_idx-1] != -1:
                             self.board[row_idx+1][nr_idx-1] += 1
+                    except:
+                        pass
+                    try:
                         #below
-                        if row_idx < 31 and self.board[row_idx+1][nr_idx] != -1:
+                        if row_idx <= self.x and self.board[row_idx+1][nr_idx] != -1:
                             self.board[row_idx+1][nr_idx] += 1
+                    except:
+                        pass
+                    try:
                         #below 1 after
-                        if row_idx < 31 and nr_idx < 19 and self.board[row_idx+1][nr_idx+1] != -1:
+                        if row_idx <= self.x and nr_idx < self.y and self.board[row_idx+1][nr_idx+1] != -1:
                             self.board[row_idx+1][nr_idx+1] += 1
                     except:
                         pass
+
         return self.board
 
     @property
