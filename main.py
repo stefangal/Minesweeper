@@ -296,7 +296,8 @@ class MS:
         self.np_board = Array(self.w//25, self.h//25, self.bomb_qty)
         print(self.np_board.board)
         start_time = time.time()
-        minutes = 0
+        seconds, minutes = 0, 0
+
         once = 0
 
         running = True
@@ -304,11 +305,6 @@ class MS:
         while running:
             clock.tick(60)
 
-            #TIMER --------------------------------
-            seconds = (time.time() - start_time)
-            if (time.time() - start_time) > 59 == 0:
-                minutes += 1
-                start_time = time.time()
 
             # WHEN LOST --------------------------------------
             if self.lost():
@@ -341,8 +337,7 @@ class MS:
                 while not self.clicked():
                     self.draw_board()
                     self.screen.blit(self.WON_img, (top_screen.get_rect().centerx-100, top_screen.get_rect().centery+45))
-                    #top_screen.fill((20, 20, 20))
-                    #self.header(top_screen)
+
                     if self.clicked():
                         running = False
                         break
@@ -352,6 +347,13 @@ class MS:
             if self.clicked():
                 running = False
 
+            #TIMER --------------------------------
+            if seconds > 60:
+                minutes += 1
+                seconds = 0
+                start_time = time.time()
+            else:
+                seconds = (time.time() - start_time)
 
             # NORMAL GAME LOOP -------------------------------
             top_screen.fill((20, 20, 20))
