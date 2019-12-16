@@ -65,7 +65,7 @@ class Array:
                     bomb_qty += 1
         return bomb_qty
 
-# if __name__ == "__main__":
-#     a = Array(31, 20, 20)
-#     print(a.board)
+if __name__ == "__main__":
+    a = Array(31, 20, 50)
+    print(a.board)
 
