@@ -248,6 +248,9 @@ class MS:
                             self.board_list.append([x,y])  # add to Board_list
                             self.flag_list.pop(self.flag_list.index([x, y])) # remove from Flag list
                             self.flags -= 1
+            if self.restart:
+                self.restart = False
+                self.game()
         return False
 
     def header(self, surface):
@@ -294,7 +297,7 @@ class MS:
         top_screen = self.screen.subsurface(pygame.Rect(0, 0, self.w+30, 90))
 
         self.np_board = Array(self.w//25, self.h//25, self.bomb_qty)
-        print(self.np_board.board)
+
         start_time = time.time()
         seconds, minutes = 0, 0
 
@@ -346,6 +349,7 @@ class MS:
             # IF WANT TO RESTART -------------------------------
             if self.clicked():
                 running = False
+                self.restart = True
 
             #TIMER --------------------------------
             if seconds > 60:
