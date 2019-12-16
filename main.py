@@ -248,6 +248,9 @@ class MS:
                             self.board_list.append([x,y])  # add to Board_list
                             self.flag_list.pop(self.flag_list.index([x, y])) # remove from Flag list
                             self.flags -= 1
+            if self.restart:
+                self.restart = False
+                self.game()
         return False
 
     def header(self, surface):
@@ -346,6 +349,7 @@ class MS:
             # IF WANT TO RESTART -------------------------------
             if self.clicked():
                 running = False
+                self.restart = True
 
             #TIMER --------------------------------
             if seconds > 60:
