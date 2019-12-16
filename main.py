@@ -379,5 +379,3 @@ if __name__ == "__main__":
         minesweeper.intro()
         minesweeper.game()
     pygame.quit()
-
-
